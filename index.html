@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>تطبيق تسبيح – صدقة جارية</title>
+  <meta name="theme-color" content="#000000" />
+
+  <!-- خط عربي متصل -->
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#000;
+      --khaki:#c3b091;
+      --khaki-600:#b8a37f;
+      --khaki-700:#a88f65;
+      --text:#ffffff;
+      --glass: rgba(0,0,0,.45);
+    }
+    html,body{height:100%;}
+    body{
+      margin:0; background:var(--bg); color:var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Arabic", "Noto Naskh Arabic", "Amiri", "Scheherazade New", "Traditional Arabic", sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* الخلفية */
+    .bg{
+      position:fixed; inset:0; overflow:hidden; z-index:-1;
+    }
+    .bg svg{
+      width:140%; height:140%; position:absolute; top:-10%; right:-10%;
+      filter: blur(8px); opacity:.35; transform: scaleX(-1);
+    }
+
+    .container{
+      min-height:100dvh; display:flex; flex-direction:column; align-items:center; justify-content:space-between;
+      padding: max(18px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+      gap: 18px;
+    }
+
+    .title{
+      text-align:center; color:#fff; line-height:1.2; letter-spacing:0;
+      font-weight:700;
+      text-shadow: 0 2px 10px rgba(255,255,255,.08);
+      margin-top:6px;
+    }
+    .title .thuluth{
+      display:block;
+      font-family: 'Cairo', 'Amiri', 'Scheherazade New', serif;
+      font-size: clamp(24px, 6.2vw, 44px);
+      font-weight:700;
+      white-space: nowrap;
+      letter-spacing:0;
+      font-feature-settings: "liga" 1;
+    }
+
+    .card{
+      width:100%; max-width:520px; background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.08); border-radius: 22px; box-shadow: 0 10px 30px rgba(0,0,0,.45);
+      padding: 18px 16px 20px; backdrop-filter: blur(6px);
+    }
+
+    .count{ display:flex; align-items:center; justify-content:center; gap:14px; margin: 10px 0 18px; }
+    .count .value{
+      font-size: clamp(40px, 14vw, 80px); font-weight:800; line-height:1; text-align:center;
+      padding: 8px 14px; border-radius:18px; background: rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.08);
+      min-width: 140px;
+    }
+
+    .actions{ display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+    .btn{
+      appearance:none; border:none; cursor:pointer; user-select:none;
+      background: var(--khaki);
+      color:#1d1a14; font-weight:800;
+      padding: 14px 18px; border-radius: 999px; font-size: clamp(16px, 4.5vw, 20px);
+      transition: transform .06s ease, box-shadow .2s ease, background .2s ease;
+      box-shadow: 0 6px 0 var(--khaki-700), 0 10px 24px rgba(195,176,145,.35);
+      min-width: 120px; text-align:center;
+    }
+    .btn:active{ transform: translateY(2px); box-shadow: 0 4px 0 var(--khaki-700), 0 8px 20px rgba(195,176,145,.25); }
+    .btn:hover{ background: var(--khaki-600); }
+
+    .btn--circle{
+      width: clamp(170px, 62vw, 260px); height: clamp(170px, 62vw, 260px);
+      border-radius: 50%; display:grid; place-items:center; font-size: clamp(20px, 5.6vw, 28px);
+      box-shadow: 0 10px 0 var(--khaki-700), 0 18px 40px rgba(195,176,145,.35);
+    }
+
+    .subtext{ opacity:.9; text-align:center; font-size:14px; margin-top:8px; }
+    .row{ display:flex; gap:10px; align-items:center; justify-content:center; flex-wrap:wrap; }
+
+    .switch{ display:inline-flex; align-items:center; gap:10px; background: rgba(255,255,255,.06); padding:8px 12px; border-radius: 999px; border:1px solid rgba(255,255,255,.1); }
+    .switch input{ inline-size: 46px; block-size: 26px; appearance: none; outline: none; background: #333; border-radius: 999px; position:relative; transition: background .2s ease; }
+    .switch input:checked{ background: var(--khaki); }
+    .switch input::after{ content:""; position:absolute; inset:3px auto 3px 3px; width:20px; height:20px; border-radius:50%; background:#fff; transition:left .2s ease; left:3px; }
+    .switch input:checked::after{ left: 23px; }
+
+    footer{ opacity:.8; font-size:12px; text-align:center; margin-bottom:4px; }
+    footer .author{ color:var(--khaki); margin-top:4px; display:block; }
+    a{ color:var(--khaki); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <!-- الخلفية الضبابية للمسجد -->
+  <div class="bg" aria-hidden="true">
+    <svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" role="img" aria-label="خلفية مسجد">
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#0b0b0b"/>
+          <stop offset="100%" stop-color="#000000"/>
+        </linearGradient>
+      </defs>
+      <rect width="1200" height="800" fill="url(#sky)"/>
+      <g opacity=".35">
+        <ellipse cx="200" cy="540" rx="380" ry="120" fill="#999"/>
+        <ellipse cx="760" cy="560" rx="420" ry="140" fill="#aaa"/>
+      </g>
+      <g fill="#ffffff">
+        <rect x="160" y="260" width="30" height="340" opacity=".12"/>
+        <polygon points="175,220 160,260 190,260" opacity=".12"/>
+        <rect x="980" y="240" width="28" height="360" opacity=".10"/>
+        <polygon points="994,200 980,240 1008,240" opacity=".10"/>
+      </g>
+      <g fill="#ffffff" opacity=".12">
+        <rect x="260" y="420" width="680" height="180"/>
+        <circle cx="600" cy="400" r="120"/>
+        <circle cx="400" cy="460" r="70"/>
+        <circle cx="820" cy="460" r="70"/>
+      </g>
+    </svg>
+  </div>
+
+  <div class="container">
+    <header class="title">
+      <span class="thuluth">سبحان الله الله أكبر</span>
+    </header>
+
+    <main class="card" role="main">
+      <div class="count" aria-live="polite">
+        <div class="value" id="count">0</div>
+      </div>
+
+      <div class="actions" style="justify-content: center; margin-bottom: 14px;">
+        <button id="tapBtn" class="btn btn--circle" aria-label="تسبيح (اضغط)">اضغط للتسبيح</button>
+      </div>
+
+      <div class="row" style="justify-content:center;">
+        <button id="decBtn" class="btn" aria-label="نقّص واحد">– 1</button>
+        <button id="resetBtn" class="btn" aria-label="تصفير العداد">تصفير</button>
+        <button id="add33Btn" class="btn" aria-label="إضافة 33">+ 33</button>
+      </div>
+
+      <div class="row" style="margin-top: 12px;">
+        <label class="switch" title="اهتزاز عند النقر">
+          <span>اهتزاز</span>
+          <input id="vibrateToggle" type="checkbox" checked>
+        </label>
+        <label class="switch" title="صوت نقر خفيف">
+          <span>صوت</span>
+          <input id="soundToggle" type="checkbox">
+        </label>
+      </div>
+
+      <p class="subtext">يحفظ العداد تلقائيًا في جهازك (صدقة جارية، وذكرٌ دائم بإذن الله).</p>
+      <footer>
+        محمد الحكمي
+      </footer>
+    </main>
+  </div>
+
+  <audio id="clickSound" preload="auto">
+    <source src="data:audio/mp3;base64,//uQZAAAAAAAAAAAA" type="audio/mp3">
+  </audio>
+
+  <script>
+    (function(){
+      const countEl = document.getElementById('count');
+      const tapBtn = document.getElementById('tapBtn');
+      const decBtn = document.getElementById('decBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const add33Btn = document.getElementById('add33Btn');
+      const vibrateToggle = document.getElementById('vibrateToggle');
+      const soundToggle = document.getElementById('soundToggle');
+      const sound = document.getElementById('clickSound');
+
+      let count = 0;
+      const KEY = 'tasbeeh_count_v1';
+      const VKEY = 'tasbeeh_vibrate_v1';
+      const SKEY = 'tasbeeh_sound_v1';
+
+      try{
+        const saved = localStorage.getItem(KEY);
+        if(saved !== null) count = parseInt(saved, 10) || 0;
+        const vib = localStorage.getItem(VKEY);
+        if(vib !== null) vibrateToggle.checked = vib === '1';
+        const snd = localStorage.getItem(SKEY);
+        if(snd !== null) soundToggle.checked = snd === '1';
+      }catch(e){ }
+      update();
+
+      function update(){ countEl.textContent = count; save(); }
+      function save(){
+        try{
+          localStorage.setItem(KEY, String(count));
+          localStorage.setItem(VKEY, vibrateToggle.checked ? '1':'0');
+          localStorage.setItem(SKEY, soundToggle.checked ? '1':'0');
+        }catch(e){}
+      }
+
+      function haptics(){ if(vibrateToggle.checked && navigator.vibrate){ navigator.vibrate(25); } }
+      function clickSound(){ if(soundToggle.checked){ try{ sound.currentTime = 0; sound.play().catch(()=>{}); }catch(e){} } }
+
+      function spawnStar(x, y){
+        const star = document.createElement('div');
+        star.textContent = '⭐';
+        star.style.position = 'fixed';
+        star.style.left = x + 'px';
+        star.style.top = y + 'px';
+        star.style.fontSize = `${Math.random()*24 + 16}px`;
+        star.style.pointerEvents = 'none';
+        star.style.opacity = '1';
+        star.style.transition = 'transform 0.8s ease-out, opacity 0.8s ease-out';
+        document.body.appendChild(star);
+
+        const dx = (Math.random()-0.5)*80;
+        const dy = -Math.random()*100 - 50;
+        const scale = Math.random()*0.5 + 0.8;
+        requestAnimationFrame(()=>{
+          star.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
+          star.style.opacity = '0';
+        });
+
+        setTimeout(()=> star.remove(), 800);
+      }
+
+      tapBtn.addEventListener('click', (e)=>{
+        count++; update(); haptics(); clickSound();
+        const rect = tapBtn.getBoundingClientRect();
+        const x = rect.left + rect.width/2 + (Math.random()-0.5)*50;
+        const y = rect.top + rect.height/2 + (Math.random()-0.5)*50;
+        spawnStar(x, y);
+      });
+
+      decBtn.addEventListener('click', ()=>{ if(count>0) count--; update(); haptics(); });
+      add33Btn.addEventListener('click', ()=>{ count += 33; update(); haptics(); });
+      resetBtn.addEventListener('click', ()=>{
+        if(confirm('تأكيد تصفير العداد؟')){ count = 0; update(); haptics(); }
+      });
+
+      document.addEventListener('pointerdown', (e)=>{
+        const t = e.target;
+        if(t.closest('button') || t.closest('input')) return;
+        count++; update(); haptics(); clickSound();
+        spawnStar(e.clientX, e.clientY);
+      });
+
+      document.addEventListener('gesturestart', e=> e.preventDefault());
+    })();
+  </script>
+</body>
+</html>
+<audio id="clickSound" preload="auto">
+  <source src="data:audio/mp3;base64,//uQZAAAAAAAAAAAA" type="audio/mp3">
+</audio>
+
+<script>
+(function(){
+  const countEl = document.getElementById('count');
+  const tapBtn = document.getElementById('tapBtn');
+  const decBtn = document.getElementById('decBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const add33Btn = document.getElementById('add33Btn');
+  const vibrateToggle = document.getElementById('vibrateToggle');
+  const soundToggle = document.getElementById('soundToggle');
+  const sound = document.getElementById('clickSound');
+
+  let count = 0;
+  const KEY = 'tasbeeh_count_v1';
+  const VKEY = 'tasbeeh_vibrate_v1';
+  const SKEY = 'tasbeeh_sound_v1';
+
+  try{
+    const saved = localStorage.getItem(KEY);
+    if(saved !== null) count = parseInt(saved, 10) || 0;
+    const vib = localStorage.getItem(VKEY);
+    if(vib !== null) vibrateToggle.checked = vib === '1';
+    const snd = localStorage.getItem(SKEY);
+    if(snd !== null) soundToggle.checked = snd === '1';
+  }catch(e){ }
+  update();
+
+  function update(){ countEl.textContent = count; save(); }
+  function save(){
+    try{
+      localStorage.setItem(KEY, String(count));
+      localStorage.setItem(VKEY, vibrateToggle.checked ? '1':'0');
+      localStorage.setItem(SKEY, soundToggle.checked ? '1':'0');
+    }catch(e){}
+  }
+
+  function haptics(){ if(vibrateToggle.checked && navigator.vibrate){ navigator.vibrate(25); } }
+  function clickSound(){ if(soundToggle.checked){ try{ sound.currentTime = 0; sound.play().catch(()=>{}); }catch(e){} } }
+
+  function spawnStar(x, y){
+    const star = document.createElement('div');
+    star.textContent = '⭐';
+    star.style.position = 'fixed';
+    star.style.left = x + 'px';
+    star.style.top = y + 'px';
+    star.style.fontSize = `${Math.random()*24 + 16}px`;
+    star.style.pointerEvents = 'none';
+    star.style.opacity = '1';
+    star.style.transition = 'transform 0.8s ease-out, opacity 0.8s ease-out';
+    document.body.appendChild(star);
+
+    const dx = (Math.random()-0.5)*80;
+    const dy = -Math.random()*100 - 50;
+    const scale = Math.random()*0.5 + 0.8;
+    requestAnimationFrame(()=>{ star.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`; star.style.opacity = '0'; });
+
+    setTimeout(()=> star.remove(), 800);
+  }
+
+  tapBtn.addEventListener('click', (e)=>{
+    count++; update(); haptics(); clickSound();
+    const rect = tapBtn.getBoundingClientRect();
+    const x = rect.left + rect.width/2 + (Math.random()-0.5)*50;
+    const y = rect.top + rect.height/2 + (Math.random()-0.5)*50;
+    spawnStar(x, y);
+  });
+
+  decBtn.addEventListener('click', ()=>{ if(count>0) count--; update(); haptics(); });
+  add33Btn.addEventListener('click', ()=>{ count += 33; update(); haptics(); });
+  resetBtn.addEventListener('click', ()=>{
+    if(confirm('تأكيد تصفير العداد؟')){ count = 0; update(); haptics(); }
+  });
+
+  document.addEventListener('pointerdown', (e)=>{
+    const t = e.target;
+    if(t.closest('button') || t.closest('input')) return;
+    count++; update(); haptics(); clickSound();
+    spawnStar(e.clientX, e.clientY);
+  });
+
+  document.addEventListener('gesturestart', e=> e.preventDefault());
+})();
+</script>
